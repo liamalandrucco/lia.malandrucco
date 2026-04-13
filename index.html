@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lia Malandrucco — Street Photography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f7f7;
+    --border: #e8e8e8;
+    --text: #111111;
+    --muted: #999;
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    cursor: crosshair;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-name {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  /* HERO */
+  #hero {
+    padding: 100px 40px 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: end;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-title em { font-style: italic; color: var(--muted); }
+
+  .hero-tagline {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 340px;
+    margin-bottom: 32px;
+  }
+
+  .hero-stats { display: flex; gap: 40px; }
+
+  .stat-num {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    font-weight: 300;
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .chapter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .chapter-pill {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .chapter-pill:hover { color: var(--text); border-color: var(--text); }
+
+  /* CHAPTERS */
+  .chapter { border-bottom: 1px solid var(--border); padding: 60px 40px; }
+
+  .chapter-header {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 12px;
+  }
+
+  .chapter-num {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .chapter-title {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .chapter-title em { font-style: italic; color: var(--muted); }
+
+  .chapter-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.75;
+    max-width: 480px;
+    margin-bottom: 32px;
+  }
+
+  /* GRID */
+  .photo-grid { columns: 3; column-gap: 6px; }
+
+  @media (max-width: 900px) { .photo-grid { columns: 2; } }
+  @media (max-width: 560px) { .photo-grid { columns: 1; } }
+
+  .photo-item {
+    break-inside: avoid;
+    margin-bottom: 6px;
+    position: relative;
+    overflow: hidden;
+    cursor: zoom-in;
+    background: var(--surface);
+  }
+
+  .photo-item svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.4s;
+  }
+
+  .photo-item:hover svg { transform: scale(1.03); }
+
+  .photo-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 28px 12px 10px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.38));
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .photo-item:hover .photo-caption { opacity: 1; }
+
+  .caption-loc { font-size: 11px; color: #fff; letter-spacing: 0.06em; }
+  .caption-year { font-size: 10px; color: rgba(255,255,255,0.55); }
+
+  /* ABOUT */
+  #about {
+    padding: 80px 40px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+
+  .about-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 4px;
+  }
+
+  .about-text {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .about-text p + p { margin-top: 1em; }
+  .about-text em { font-style: italic; color: var(--muted); }
+
+  /* CONTACT */
+  #contatti { padding: 60px 40px; }
+
+  .contact-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .contact-text {
+    font-family: var(--font-serif);
+    font-size: 36px;
+    font-weight: 300;
+  }
+
+  .contact-links { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .contact-link {
+    display: inline-block;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .contact-link:hover { border-color: var(--text); color: var(--text); }
+
+  .contact-link.primary {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+  }
+
+  .contact-link.primary:hover { background: #333; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  footer span { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
+
+  /* LIGHTBOX */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.97);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+  }
+
+  .lightbox.open { display: flex; }
+
+  .lightbox img { max-width: 90vw; max-height: 88vh; object-fit: contain; }
+
+  .lightbox-close {
+    position: absolute;
+    top: 24px; right: 32px;
+    font-size: 11px; color: var(--muted);
+    cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  .lightbox-caption {
+    position: absolute;
+    bottom: 28px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.08em; white-space: nowrap;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 700px) {
+    nav { padding: 16px 20px; }
+    #hero { grid-template-columns: 1fr; padding: 60px 20px 48px; gap: 32px; }
+    .chapter { padding: 48px 20px; }
+    #about { grid-template-columns: 1fr; padding: 48px 20px; gap: 16px; }
+    #contatti { padding: 48px 20px; }
+    .contact-inner { flex-direction: column; align-items: flex-start; }
+    footer { padding: 20px; flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-name">Lia Malandrucco</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#contatti">Contatti</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <div class="hero-title">
+    Guardo<br>le cose<br><em>di lato</em>
+  </div>
+  <div>
+    <p class="hero-tagline">
+      Fotografo le strade del mondo — i mercati rumorosi, i vicoli silenziosi, i musei pieni.
+    </p>
+    <div class="chapter-pills">
+      <a href="#storto" class="chapter-pill">I — Storto</a>
+      <a href="#coincidenze" class="chapter-pill">II — Coincidenze</a>
+      <a href="#attraverso" class="chapter-pill">III — Attraverso</a>
+    </div>
+  </div>
+</section>
+
+<section class="chapter" id="storto">
+  <div class="chapter-header">
+    <span class="chapter-num">I</span>
+    <span class="chapter-title"><em>Stor</em>to</span>
+  </div>
+  <div class="photo-grid" id="grid-storto"></div>
+</section>
+
+<section class="chapter" id="coincidenze">
+  <div class="chapter-header">
+    <span class="chapter-num">II</span>
+    <span class="chapter-title"><em>Coin</em>cidenze</span>
+  </div>
+  <div class="photo-grid" id="grid-coincidenze"></div>
+</section>
+
+<section class="chapter" id="attraverso">
+  <div class="chapter-header">
+    <span class="chapter-num">III</span>
+    <span class="chapter-title"><em>Attra</em>verso</span>
+  </div>
+  <div class="photo-grid" id="grid-attraverso"></div>
+</section>
+
+<section id="about">
+  <div class="about-label">About</div>
+  <div class="about-text">
+    <p>Mi chiamo Lia e fotografo in viaggio.</p>
+    <p>Preferisco stare un passo indietro, trovare un angolo strano, aspettare che succeda qualcosa di <em>leggermente sbagliato</em>.</p>
+  </div>
+</section>
+
+<section id="contatti">
+  <div class="contact-inner">
+    <div class="contact-text">Parliamoci.</div>
+    <div class="contact-links">
+      <a href="mailto:liamalandrucco@gmail.com" class="contact-link primary">Scrivimi</a>
+      <a href="https://www.instagram.com/lia.malandrucco/" target="_blank" class="contact-link">Instagram</a>
+      <a href="#" class="contact-link">Prints</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 Lia Malandrucco</span>
+  <span>Milano</span>
+</footer>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lightbox-close">× chiudi</span>
+  <img src="" id="lightboxImg" alt="">
+  <div class="lightbox-caption" id="lightboxCaption"></div>
+</div>
+
+<script>
+const chapters = {
+  storto: [
+    { src: "foto/DSC04865.jpg", h: 300, loc: "Parigi, 2026" },
+    { fill: "#e0e4e8", h: 200, loc: "Lisbona, 2024" },
+    { fill: "#e8e0e0", h: 360, loc: "Mumbai, 2024" },
+    { fill: "#e4e8e0", h: 220, loc: "Barcellona, 2023" },
+    { fill: "#e8e4dc", h: 280, loc: "Hanoi, 2022" },
+    { fill: "#dce8e4", h: 200, loc: "Istanbul, 2024" },
+  ],
+  coincidenze: [
+    { src: "foto/DSC04318.jpg", loc: "Parigi, 2026" },
+    { fill: "#e8e4e0", h: 340, loc: "La Havana, 2022" },
+    { fill: "#e0e8e0", h: 200, loc: "Osaka, 2024" },
+    { fill: "#e8dce0", h: 300, loc: "Cartagena, 2023" },
+    { fill: "#e0dce8", h: 220, loc: "Nairobi, 2022" },
+    { fill: "#e8e8dc", h: 260, loc: "Tokyo, 2023" },
+  ],
+  attraverso: [
+    { src: "foto/DSC04355.jpg", h: 300, loc: "Parigi, 2026" },
+    { fill: "#e8dce8", h: 200, loc: "Lisbona, 2024" },
+    { fill: "#e0e8e4", h: 280, loc: "Hanoi, 2022" },
+    { fill: "#e8e0dc", h: 240, loc: "Marrakech, 2022" },
+    { fill: "#dce8dc", h: 300, loc: "Barcellona, 2023" },
+    { fill: "#e4dce8", h: 200, loc: "Mumbai, 2024" },
+  ]
+};
+
+const shapes = {
+  storto: (p, i) => `
+    <rect x="40" y="${p.h*0.12}" width="${p.h*0.58}" height="${p.h*0.58}" rx="1"
+      fill="rgba(0,0,0,0.07)" transform="rotate(${-7 + i*3} 200 ${p.h/2})"/>
+    <line x1="0" y1="${p.h*0.54}" x2="400" y2="${p.h*0.43}"
+      stroke="rgba(0,0,0,0.05)" stroke-width="1.5"/>`,
+  coincidenze: (p, i) => `
+    <circle cx="${115 + i*8}" cy="${p.h*0.45}" r="${p.h*0.17}" fill="rgba(0,0,0,0.05)"/>
+    <circle cx="${265 - i*8}" cy="${p.h*0.47}" r="${p.h*0.17}" fill="rgba(0,0,0,0.05)"/>`,
+  attraverso: (p) => `
+    <rect x="0" y="0" width="28" height="${p.h}" fill="rgba(0,0,0,0.07)"/>
+    <rect x="372" y="0" width="28" height="${p.h}" fill="rgba(0,0,0,0.07)"/>
+    <rect x="28" y="0" width="344" height="${p.h*0.07}" fill="rgba(0,0,0,0.04)"/>
+    <rect x="28" y="${p.h*0.93}" width="344" height="${p.h*0.07}" fill="rgba(0,0,0,0.04)"/>`
+};
+
+function buildGrid(chapter) {
+  const grid = document.getElementById('grid-' + chapter);
+  grid.innerHTML = chapters[chapter].map((p, i) => {
+    const inner = p.src
+      ? `<img src="${p.src}" alt="${p.loc}" style="display:block;width:100%;height:auto;transition:transform 0.4s;">`
+      : `<svg viewBox="0 0 400 ${p.h}" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="${p.h}" fill="${p.fill}"/>
+          ${shapes[chapter](p, i)}
+        </svg>`;
+    return `
+      <div class="photo-item" onclick="openLightbox(this, '${p.loc}')">
+        ${inner}
+        <div class="photo-caption">
+          <span class="caption-loc">${p.loc}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openLightbox(el, loc) {
+  const img = el.querySelector('img');
+  const svg = el.querySelector('svg');
+  let url;
+  if (img) {
+    url = img.src;
+  } else {
+    url = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(new XMLSerializer().serializeToString(svg))));
+  }
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxCaption').textContent = loc;
+  document.getElementById('lightbox').classList.add('open');
+  event.stopPropagation();
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+buildGrid('storto');
+buildGrid('coincidenze');
+buildGrid('attraverso');
+</script>

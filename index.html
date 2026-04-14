@@ -30,7 +30,6 @@
     cursor: crosshair;
   }
 
-  /* NAV */
   nav {
     position: sticky;
     top: 0;
@@ -65,7 +64,6 @@
 
   .nav-links a:hover { color: var(--text); }
 
-  /* HERO */
   #hero {
     padding: 100px 40px 80px;
     display: grid;
@@ -94,22 +92,6 @@
     margin-bottom: 32px;
   }
 
-  .hero-stats { display: flex; gap: 40px; }
-
-  .stat-num {
-    font-family: var(--font-serif);
-    font-size: 32px;
-    font-weight: 300;
-    display: block;
-  }
-
-  .stat-label {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
   .chapter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
 
   .chapter-pill {
@@ -125,7 +107,6 @@
 
   .chapter-pill:hover { color: var(--text); border-color: var(--text); }
 
-  /* CHAPTERS */
   .chapter { border-bottom: 1px solid var(--border); padding: 60px 40px; }
 
   .chapter-header {
@@ -152,19 +133,11 @@
 
   .chapter-title em { font-style: italic; color: var(--muted); }
 
-  .chapter-desc {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.75;
-    max-width: 480px;
-    margin-bottom: 32px;
-  }
+  /* GRID: colonne masonry */
+  .photo-grid { columns: 3; column-gap: 6px; }
 
-  /* GRID */
-  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-
-  @media (max-width: 900px) { .photo-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 560px) { .photo-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .photo-grid { columns: 2; } }
+  @media (max-width: 560px) { .photo-grid { columns: 1; } }
 
   .photo-item {
     break-inside: avoid;
@@ -175,16 +148,27 @@
     background: var(--surface);
   }
 
-  .photo-item svg {
+  .photo-item img {
     display: block;
     width: 100%;
     height: auto;
     transition: transform 0.4s;
   }
 
-  .photo-item:hover svg { transform: scale(1.03); }
-  .photo-item.featured { grid-column: span 2; }
-  .photo-item.featured img { height: 500px; object-fit: cover; }
+  .photo-item:hover img { transform: scale(1.03); }
+
+  /* Featured: rompe fuori dalla colonna e occupa tutta la larghezza */
+  .photo-item.featured {
+    break-inside: avoid;
+    column-span: all;
+    margin-bottom: 6px;
+  }
+
+  .photo-item.featured img {
+    width: 100%;
+    height: 60vh;
+    object-fit: cover;
+  }
 
   .photo-caption {
     position: absolute;
@@ -201,9 +185,7 @@
   .photo-item:hover .photo-caption { opacity: 1; }
 
   .caption-loc { font-size: 11px; color: #fff; letter-spacing: 0.06em; }
-  .caption-year { font-size: 10px; color: rgba(255,255,255,0.55); }
 
-  /* ABOUT */
   #about {
     padding: 80px 40px;
     display: grid;
@@ -232,7 +214,6 @@
   .about-text p + p { margin-top: 1em; }
   .about-text em { font-style: italic; color: var(--muted); }
 
-  /* CONTACT */
   #contatti { padding: 60px 40px; }
 
   .contact-inner {
@@ -283,7 +264,6 @@
 
   footer span { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
 
-  /* LIGHTBOX */
   .lightbox {
     display: none;
     position: fixed;
@@ -326,6 +306,7 @@
     #contatti { padding: 48px 20px; }
     .contact-inner { flex-direction: column; align-items: flex-start; }
     footer { padding: 20px; flex-direction: column; gap: 8px; }
+    .photo-item.featured img { height: 40vh; }
   }
 </style>
 </head>
@@ -412,75 +393,51 @@
 <script>
 const chapters = {
   storto: [
-    { src: "foto/DSC04865.jpg", h: 300, loc: "Parigi, 2026" },
-    { src: "foto/DSC04638.jpg", h: 200, loc: "La Habana, 2022" },
-    { src: "foto/DSC05365.jpg", h: 360, loc: "La Habana, 2022" },
-    { src: "foto/DSC05811.jpg", h: 220, loc: "Hanoi, 2024" },
-    { src: "foto/DSC00309.jpg", h: 280, loc: "Istanbul, 2024" },
-    { src: "foto/DSC04641.jpg", h: 200, loc: "Parigi, 2026" },
-    { src: "foto/DSC04989.jpg", h: 200, loc: "Parigi, 2026" },
+    { src: "foto/DSC04865.jpg", loc: "Parigi, 2026" },
+    { src: "foto/DSC04638.jpg", loc: "La Habana, 2022" },
+    { src: "foto/DSC05365.jpg", loc: "La Habana, 2022" },
+    { src: "foto/DSC05811.jpg", loc: "Hanoi, 2024" },
+    { src: "foto/DSC00309.jpg", loc: "Istanbul, 2024" },
+    { src: "foto/DSC04641.jpg", loc: "Parigi, 2026" },
+    { src: "foto/DSC04989.jpg", loc: "Parigi, 2026" },
   ],
   coincidenze: [
     { src: "foto/DSC04318.jpg", loc: "Parigi, 2026" },
-    { src: "foto/DSC04969.jpg", h: 340, loc: "La Habana, 2022" },
-    { src: "foto/DSC09186.jpg", h: 200, loc: "Hong Kong, 2024" },
-    { src: "foto/DSC06381.jpg", h: 300, loc: "Hoi An, 2024" },
-    { src: "foto/DSC06606.jpg", h: 220, loc: "Phnom Penh, 2024" },
-    { src: "foto/DSC02598.jpg", h: 260, loc: "Marrakech, 2025" },
-    { src: "foto/DSC04283.jpg", h: 260, loc: "Parigi, 2026" },
-    { src: "foto/DSC04437.jpg", h: 260, loc: "Parigi, 2026" },
-    { src: "foto/DSC04858.jpg", h: 260, loc: "Parigi, 2026" },
+    { src: "foto/DSC04969.jpg", loc: "La Habana, 2022" },
+    { src: "foto/DSC09186.jpg", loc: "Hong Kong, 2024" },
+    { src: "foto/DSC06381.jpg", loc: "Hoi An, 2024" },
+    { src: "foto/DSC06606.jpg", loc: "Phnom Penh, 2024" },
+    { src: "foto/DSC02598.jpg", loc: "Marrakech, 2025" },
+    { src: "foto/DSC04283.jpg", loc: "Parigi, 2026" },
+    { src: "foto/DSC04437.jpg", loc: "Parigi, 2026" },
+    { src: "foto/DSC04858.jpg", loc: "Parigi, 2026" },
   ],
   attraverso: [
-    { src: "foto/DSC04355.jpg", h: 300, loc: "Parigi, 2026" },
-    { src: "foto/DSC08954.jpg", h: 200, loc: "New York, 2024" },
-    { src: "foto/DSC06527.jpg", h: 280, loc: "Mekong Delta, 2024" },
-    { src: "foto/DSC06714.jpg", h: 240, loc: "Siem Reap, 2024" },
-    { src: "foto/DSC02841.jpg", h: 300, loc: "Marrakech, 2025" },
-    { src: "foto/DSC09082-2.jpg", h: 200, loc: "New York, 2024" },
-    { src: "foto/DSC04588.jpg", h: 200, loc: "Parigi, 2026",featured: true},
+    { src: "foto/DSC04355.jpg", loc: "Parigi, 2026" },
+    { src: "foto/DSC08954.jpg", loc: "New York, 2024" },
+    { src: "foto/DSC06527.jpg", loc: "Mekong Delta, 2024" },
+    { src: "foto/DSC06714.jpg", loc: "Siem Reap, 2024" },
+    { src: "foto/DSC02841.jpg", loc: "Marrakech, 2025" },
+    { src: "foto/DSC09082-2.jpg", loc: "New York, 2024" },
+    { src: "foto/DSC04588.jpg", loc: "Parigi, 2026", featured: true },
   ]
-};
-
-const shapes = {
-  storto: (p, i) => `
-    <rect x="40" y="${p.h*0.12}" width="${p.h*0.58}" height="${p.h*0.58}" rx="1"
-      fill="rgba(0,0,0,0.07)" transform="rotate(${-7 + i*3} 200 ${p.h/2})"/>
-    <line x1="0" y1="${p.h*0.54}" x2="400" y2="${p.h*0.43}"
-      stroke="rgba(0,0,0,0.05)" stroke-width="1.5"/>`,
-  coincidenze: (p, i) => `
-    <circle cx="${115 + i*8}" cy="${p.h*0.45}" r="${p.h*0.17}" fill="rgba(0,0,0,0.05)"/>
-    <circle cx="${265 - i*8}" cy="${p.h*0.47}" r="${p.h*0.17}" fill="rgba(0,0,0,0.05)"/>`,
-  attraverso: (p) => `
-    <rect x="0" y="0" width="28" height="${p.h}" fill="rgba(0,0,0,0.07)"/>
-    <rect x="372" y="0" width="28" height="${p.h}" fill="rgba(0,0,0,0.07)"/>
-    <rect x="28" y="0" width="344" height="${p.h*0.07}" fill="rgba(0,0,0,0.04)"/>
-    <rect x="28" y="${p.h*0.93}" width="344" height="${p.h*0.07}" fill="rgba(0,0,0,0.04)"/>`
 };
 
 function buildGrid(chapter) {
   const grid = document.getElementById('grid-' + chapter);
-  grid.innerHTML = chapters[chapter].map((p) => {
-    return `
-      <div class="photo-item${p.featured ? ' featured' : ''}" onclick="openLightbox(this, '${p.loc}')">
-        <img src="${p.src}" alt="${p.loc}">
-        <div class="photo-caption">
-          <span class="caption-loc">${p.loc}</span>
-        </div>
-      </div>`;
-  }).join('');
+  grid.innerHTML = chapters[chapter].map((p) => `
+    <div class="photo-item${p.featured ? ' featured' : ''}" onclick="openLightbox(this, '${p.loc}')">
+      <img src="${p.src}" alt="${p.loc}">
+      <div class="photo-caption">
+        <span class="caption-loc">${p.loc}</span>
+      </div>
+    </div>
+  `).join('');
 }
 
 function openLightbox(el, loc) {
   const img = el.querySelector('img');
-  const svg = el.querySelector('svg');
-  let url;
-  if (img) {
-    url = img.src;
-  } else {
-    url = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(new XMLSerializer().serializeToString(svg))));
-  }
-  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxImg').src = img.src;
   document.getElementById('lightboxCaption').textContent = loc;
   document.getElementById('lightbox').classList.add('open');
   event.stopPropagation();
@@ -496,3 +453,5 @@ buildGrid('storto');
 buildGrid('coincidenze');
 buildGrid('attraverso');
 </script>
+</body>
+</html>

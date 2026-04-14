@@ -161,10 +161,10 @@
   }
 
   /* GRID */
-  .photo-grid { columns: 3; column-gap: 6px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 
-  @media (max-width: 900px) { .photo-grid { columns: 2; } }
-  @media (max-width: 560px) { .photo-grid { columns: 1; } }
+  @media (max-width: 900px) { .photo-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .photo-grid { grid-template-columns: 1fr; } }
 
   .photo-item {
     break-inside: avoid;
@@ -183,6 +183,8 @@
   }
 
   .photo-item:hover svg { transform: scale(1.03); }
+  .photo-item.featured { grid-column: span 2; }
+  .photo-item.featured img { height: 500px; object-fit: cover; }
 
   .photo-caption {
     position: absolute;
@@ -436,7 +438,7 @@ const chapters = {
     { src: "foto/DSC06714.jpg", h: 240, loc: "Siem Reap, 2024" },
     { src: "foto/DSC02841.jpg", h: 300, loc: "Marrakech, 2025" },
     { src: "foto/DSC09082-2.jpg", h: 200, loc: "New York, 2024" },
-    { src: "foto/DSC04588.jpg", h: 200, loc: "Parigi, 2024",featured: true},
+    { src: "foto/DSC04588.jpg", h: 200, loc: "Parigi, 2026",featured: true},
   ]
 };
 
@@ -458,16 +460,10 @@ const shapes = {
 
 function buildGrid(chapter) {
   const grid = document.getElementById('grid-' + chapter);
-  grid.innerHTML = chapters[chapter].map((p, i) => {
-    const inner = p.src
-      ? `<img src="${p.src}" alt="${p.loc}" style="display:block;width:100%;height:auto;transition:transform 0.4s;">`
-      : `<svg viewBox="0 0 400 ${p.h}" xmlns="http://www.w3.org/2000/svg">
-          <rect width="400" height="${p.h}" fill="${p.fill}"/>
-          ${shapes[chapter](p, i)}
-        </svg>`;
+  grid.innerHTML = chapters[chapter].map((p) => {
     return `
-      <div class="photo-item" onclick="openLightbox(this, '${p.loc}')">
-        ${inner}
+      <div class="photo-item${p.featured ? ' featured' : ''}" onclick="openLightbox(this, '${p.loc}')">
+        <img src="${p.src}" alt="${p.loc}">
         <div class="photo-caption">
           <span class="caption-loc">${p.loc}</span>
         </div>

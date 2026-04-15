@@ -275,6 +275,20 @@
     letter-spacing: 0.08em; white-space: nowrap;
   }
 
+  .lightbox-prev, .lightbox-next {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--muted);
+    cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 12px;
+    transition: color 0.2s;
+    user-select: none;
+  }
+
+  .lightbox-prev:hover, .lightbox-next:hover { color: var(--text); }
+  .lightbox-prev { left: 24px; }
+  .lightbox-next { right: 24px; }
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -367,7 +381,9 @@
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <span class="lightbox-close">× chiudi</span>
-  <img src="" id="lightboxImg" alt="">
+  <span class="lightbox-prev" onclick="event.stopPropagation(); navigateLightbox(-1)">← prec</span>
+  <span class="lightbox-next" onclick="event.stopPropagation(); navigateLightbox(1)">succ →</span>
+  <img src="" id="lightboxImg" alt="" onclick="event.stopPropagation()">
   <div class="lightbox-caption" id="lightboxCaption"></div>
 </div>
 
@@ -512,19 +528,48 @@ function masonry(gridId, items) {
   window.addEventListener('resize', layout);
 }
 
+// Lista globale di tutte le foto in ordine
+let allPhotos = [];
+let currentIndex = 0;
+
+function buildAllPhotos() {
+  allPhotos = [
+    ...chapters.storto,
+    ...chapters.coincidenze,
+    ...chapters.attraverso,
+  ];
+}
+
 function openLightbox(el, loc) {
   const img = el.querySelector('img');
-  document.getElementById('lightboxImg').src = img.src;
-  document.getElementById('lightboxCaption').textContent = loc;
+  const src = img.src;
+  currentIndex = allPhotos.findIndex(p => src.endsWith(p.src.replace('foto/', '')));
+  showLightboxAt(currentIndex);
+}
+
+function showLightboxAt(index) {
+  const p = allPhotos[index];
+  document.getElementById('lightboxImg').src = p.src;
+  document.getElementById('lightboxCaption').textContent = p.loc;
   document.getElementById('lightbox').classList.add('open');
+}
+
+function navigateLightbox(dir) {
+  currentIndex = (currentIndex + dir + allPhotos.length) % allPhotos.length;
+  showLightboxAt(currentIndex);
 }
 
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') navigateLightbox(1);
+  if (e.key === 'ArrowLeft') navigateLightbox(-1);
+});
 
+buildAllPhotos();
 masonry('grid-storto', chapters.storto);
 masonry('grid-coincidenze', chapters.coincidenze);
 masonry('grid-attraverso', chapters.attraverso);

@@ -395,12 +395,12 @@ const chapters = {
   ],
   attraverso: [
     { src: "foto/DSC04355.jpg", loc: "Parigi, 2026" },
-    { src: "foto/DSC08954.jpg", loc: "New York, 2024" },
-    { src: "foto/DSC06714.jpg", loc: "Siem Reap, 2024", small: true },
-    { src: "foto/DSC06527.jpg", loc: "Mekong Delta, 2024", featured:true},
+    { src: "foto/DSC08954.jpg", loc: "New York, 2024", group: "a", align: "bottom" },
+    { src: "foto/DSC06714.jpg", loc: "Siem Reap, 2024", small: true, group: "a", align: "bottom" },
+    { src: "foto/DSC06527.jpg", loc: "Mekong Delta, 2024", featured: true },
     { src: "foto/DSC02841.jpg", loc: "Marrakech, 2025" },
     { src: "foto/DSC09082-2.jpg", loc: "New York, 2024" },
-    { src: "foto/DSC04588.jpg", loc: "Parigi, 2026", featured: true },
+    { src: "foto/DSC04588.jpg", loc: "Parigi, 2026", featured: true, center: true },
   ]
 };
 
@@ -428,48 +428,67 @@ function masonry(gridId, items) {
     const totalWidth = grid.offsetWidth;
     if (totalWidth === 0) return;
 
-    // Su mobile usa 2 colonne
     const cols = totalWidth < 560 ? 2 : COLS;
     const colWidth = (totalWidth - GAP * (cols - 1)) / cols;
-
-    // Array delle altezze correnti per ogni colonna
     const colHeights = Array(cols).fill(0);
 
-    elements.forEach(({ el, p }) => {
+    // Prima passata: calcola dimensioni e posizioni provvisorie
+    const positions = elements.map(({ el, p }) => {
       const img = el.querySelector('img');
       const naturalRatio = img.naturalHeight / img.naturalWidth;
-
-      // featured = 1.5x, small = 0.75x, normale = 1x
       let itemCols = p.featured ? Math.min(Math.round(cols * 0.5), cols - 1) : 1;
       if (itemCols < 1) itemCols = 1;
-
       const baseWidth = colWidth * itemCols + GAP * (itemCols - 1);
       const itemWidth = p.small ? baseWidth * 0.75 : baseWidth;
       const itemHeight = itemWidth * naturalRatio;
+      return { el, p, itemCols, itemWidth, itemHeight, x: 0, y: 0, col: 0 };
+    });
 
-      // Trova la colonna con altezza minima che ha spazio per itemCols colonne consecutive
+    // Raggruppa per group id
+    const groups = {};
+    positions.forEach((pos) => {
+      if (pos.p.group) {
+        if (!groups[pos.p.group]) groups[pos.p.group] = [];
+        groups[pos.p.group].push(pos);
+      }
+    });
+
+    // Layout principale
+    positions.forEach((pos) => {
       let bestCol = 0;
       let bestHeight = Infinity;
-      for (let c = 0; c <= cols - itemCols; c++) {
-        const maxH = Math.max(...colHeights.slice(c, c + itemCols));
-        if (maxH < bestHeight) {
-          bestHeight = maxH;
-          bestCol = c;
-        }
+      for (let c = 0; c <= cols - pos.itemCols; c++) {
+        const maxH = Math.max(...colHeights.slice(c, c + pos.itemCols));
+        if (maxH < bestHeight) { bestHeight = maxH; bestCol = c; }
       }
-
-      const x = bestCol * (colWidth + GAP);
-      const y = bestHeight;
-
-      el.style.left = x + 'px';
-      el.style.top = y + 'px';
-      el.style.width = itemWidth + 'px';
-
-      // Aggiorna le altezze delle colonne occupate
-      const newHeight = y + itemHeight + GAP;
-      for (let c = bestCol; c < bestCol + itemCols; c++) {
+      pos.x = bestCol * (colWidth + GAP);
+      pos.y = bestHeight;
+      pos.col = bestCol;
+      const newHeight = bestHeight + pos.itemHeight + GAP;
+      for (let c = bestCol; c < bestCol + pos.itemCols; c++) {
         colHeights[c] = newHeight;
       }
+    });
+
+    // Allineamento bottom per i gruppi
+    Object.values(groups).forEach((groupItems) => {
+      const bottomAligned = groupItems.filter(p => p.p.align === 'bottom');
+      if (bottomAligned.length < 2) return;
+      // Trova il bottom più basso del gruppo
+      const maxBottom = Math.max(...bottomAligned.map(p => p.y + p.itemHeight));
+      // Allinea tutte le foto del gruppo al bottom comune
+      bottomAligned.forEach((pos) => {
+        pos.y = maxBottom - pos.itemHeight;
+      });
+    });
+
+    // Applica posizioni al DOM
+    positions.forEach(({ el, p, x, y, itemWidth }) => {
+      // Se center: true, centra orizzontalmente nella griglia
+      const finalX = p.center ? (totalWidth - itemWidth) / 2 : x;
+      el.style.left = finalX + 'px';
+      el.style.top = y + 'px';
+      el.style.width = itemWidth + 'px';
     });
 
     grid.style.height = Math.max(...colHeights) + 'px';

@@ -397,7 +397,7 @@ const chapters = {
     { src: "foto/DSC04355.jpg", loc: "Parigi, 2026" },
     { src: "foto/DSC08954.jpg", loc: "New York, 2024" },
     { src: "foto/DSC06527.jpg", loc: "Mekong Delta, 2024" },
-    { src: "foto/DSC06714.jpg", loc: "Siem Reap, 2024" },
+    { src: "foto/DSC06714.jpg", loc: "Siem Reap, 2024", small: true },
     { src: "foto/DSC02841.jpg", loc: "Marrakech, 2025" },
     { src: "foto/DSC09082-2.jpg", loc: "New York, 2024" },
     { src: "foto/DSC04588.jpg", loc: "Parigi, 2026", featured: true },
@@ -439,11 +439,12 @@ function masonry(gridId, items) {
       const img = el.querySelector('img');
       const naturalRatio = img.naturalHeight / img.naturalWidth;
 
-      // Le foto featured sono larghe 1.5x (occupano ~1.5 colonne)
+      // featured = 1.5x, small = 0.75x, normale = 1x
       let itemCols = p.featured ? Math.min(Math.round(cols * 0.5), cols - 1) : 1;
       if (itemCols < 1) itemCols = 1;
 
-      const itemWidth = colWidth * itemCols + GAP * (itemCols - 1);
+      const baseWidth = colWidth * itemCols + GAP * (itemCols - 1);
+      const itemWidth = p.small ? baseWidth * 0.75 : baseWidth;
       const itemHeight = itemWidth * naturalRatio;
 
       // Trova la colonna con altezza minima che ha spazio per itemCols colonne consecutive

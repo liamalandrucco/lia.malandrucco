@@ -394,7 +394,7 @@ const chapters = {
   storto: [
     { src: "foto/DSC04865.jpg", loc: "Parigi, 2026", half: true, group: "row1", align: "bottom" },
     { src: "foto/DSC04638.jpg", loc: "La Habana, 2022", half: true, group: "row1", align: "bottom" },
-    { src: "foto/DSC08565.jpg", loc: "Atollo di Baa, 2024" },
+    { src: "foto/DSC08565.jpg", loc: "Atollo di Baa, 2024", featured: true, newrow: true },
     { src: "foto/DSC05365.jpg", loc: "La Habana, 2022" },
     { src: "foto/DSC05811.jpg", loc: "Hanoi, 2024" },
     { src: "foto/DSC00420.jpg", loc: "Los Angeles, 2025", featured: true },
@@ -506,6 +506,11 @@ function masonry(gridId, items) {
           colHeights[c] = newH;
         }
       } else {
+        // Se newrow: true, forza tutte le colonne alla stessa altezza prima di posizionare
+        if (pos.p.newrow) {
+          const maxH = Math.max(...colHeights);
+          colHeights.fill(maxH);
+        }
         let bestCol = 0;
         let bestHeight = Infinity;
         for (let c = 0; c <= cols - pos.itemCols; c++) {

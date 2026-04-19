@@ -432,7 +432,7 @@ const chapters = {
 };
 
 const GAP = 6;
-const COLS = 3;
+const COLS = 4;
 
 function masonry(gridId, items) {
   const grid = document.getElementById(gridId);
@@ -464,7 +464,7 @@ function masonry(gridId, items) {
       const img = el.querySelector('img');
       const naturalRatio = img.naturalHeight / img.naturalWidth;
       let itemCols;
-      if (p.half) itemCols = Math.floor(cols / 2);
+      if (p.half) itemCols = Math.ceil(cols / 2);
       else if (p.featured) itemCols = Math.min(Math.round(cols * 0.5), cols - 1);
       else itemCols = 1;
       if (itemCols < 1) itemCols = 1;

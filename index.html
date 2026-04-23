@@ -499,8 +499,8 @@ function masonry(gridId, items) {
     // Layout principale
     const placedGroups = {};
     positions.forEach((pos) => {
-      // Se fa parte di un gruppo half, le foto vanno sulla stessa riga
-      if (pos.p.group && pos.p.half) {
+      // Su mobile (1 colonna) ignora completamente i gruppi
+      if (cols > 1 && pos.p.group && pos.p.half) {
         const gid = pos.p.group;
         if (!placedGroups[gid]) {
           // Prima foto del gruppo: trova la riga più bassa disponibile

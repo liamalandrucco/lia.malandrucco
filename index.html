@@ -296,13 +296,30 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 560px) {
+    .photo-grid {
+      position: static !important;
+      height: auto !important;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .photo-item {
+      position: static !important;
+      width: 100% !important;
+      left: auto !important;
+      top: auto !important;
+    }
+    .photo-item img {
+      width: 100%;
+      height: auto;
+    }
+  }
     nav { padding: 16px 20px; }
-    #hero { grid-template-columns: 1fr; padding: 32px 20px 28px; gap: 20px; }
-    .hero-title { font-size: clamp(40px, 12vw, 64px); }
-    .chapter { padding: 36px 20px; }
-    #about { grid-template-columns: 1fr; padding: 40px 20px; gap: 16px; }
-    #contatti { padding: 40px 20px; }
+    #hero { grid-template-columns: 1fr; padding: 20px; gap: 32px; }
+    .chapter { padding: 40px 20px; }
+    #about { grid-template-columns: 1fr; padding: 48px 20px; gap: 16px; }
+    #contatti { padding: 48px 20px; }
     .contact-inner { flex-direction: column; align-items: flex-start; }
     footer { padding: 20px; flex-direction: column; gap: 8px; }
   }
@@ -462,27 +479,22 @@ function masonry(gridId, items) {
     const totalWidth = grid.offsetWidth;
     if (totalWidth === 0) return;
 
-    const cols = totalWidth < 560 ? 1 : COLS;
+    const cols = totalWidth < 560 ? 2 : COLS;
     const colWidth = (totalWidth - GAP * (cols - 1)) / cols;
     const colHeights = Array(cols).fill(0);
 
     // Prima passata: calcola dimensioni e posizioni provvisorie
     const positions = elements.map(({ el, p }) => {
       const img = el.querySelector('img');
+      // Usa il ratio precalcolato se disponibile, altrimenti aspetta il caricamento
       const naturalRatio = p.ratio ? (1 / p.ratio) : (img.naturalHeight / img.naturalWidth || 0.667);
       let itemCols;
-      if (cols === 1) {
-        itemCols = 1; // su mobile tutto a colonna intera
-      } else if (p.half) {
-        itemCols = Math.ceil(cols / 2);
-      } else if (p.featured) {
-        itemCols = Math.min(Math.round(cols * 0.5), cols - 1);
-      } else {
-        itemCols = 1;
-      }
+      if (p.half) itemCols = Math.ceil(cols / 2);
+      else if (p.featured) itemCols = Math.min(Math.round(cols * 0.5), cols - 1);
+      else itemCols = 1;
       if (itemCols < 1) itemCols = 1;
       const baseWidth = colWidth * itemCols + GAP * (itemCols - 1);
-      const itemWidth = (cols > 1 && p.small) ? baseWidth * 0.75 : baseWidth;
+      const itemWidth = p.small ? baseWidth * 0.75 : baseWidth;
       const itemHeight = itemWidth * naturalRatio;
       return { el, p, itemCols, itemWidth, itemHeight, x: 0, y: 0, col: 0 };
     });
@@ -499,8 +511,8 @@ function masonry(gridId, items) {
     // Layout principale
     const placedGroups = {};
     positions.forEach((pos) => {
-      // Su mobile (1 colonna) ignora completamente i gruppi
-      if (cols > 1 && pos.p.group && pos.p.half) {
+      // Se fa parte di un gruppo half, le foto vanno sulla stessa riga
+      if (pos.p.group && pos.p.half) {
         const gid = pos.p.group;
         if (!placedGroups[gid]) {
           // Prima foto del gruppo: trova la riga più bassa disponibile

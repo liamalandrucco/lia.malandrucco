@@ -449,7 +449,7 @@ function masonry(gridId, items) {
     const div = document.createElement('div');
     div.className = 'photo-item' + (p.featured ? ' featured' : '');
     div.innerHTML = `
-      <img src="${p.src}" alt="${p.loc}">
+      <img src="${p.src}" alt="${p.loc}" loading="lazy">
       <div class="photo-caption"><span class="caption-loc">${p.loc}</span></div>
     `;
     div.addEventListener('click', () => openLightbox(div, p.loc));

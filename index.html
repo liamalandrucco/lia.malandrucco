@@ -260,8 +260,8 @@
     cursor: zoom-out;
   }
 
-  .lightbox.open { display: flex; }
-  .lightbox img { max-width: 90vw; max-height: 88vh; object-fit: contain; }
+  .lightbox.open { display: flex; cursor: zoom-out; }
+  .lightbox img { max-width: 90vw; max-height: 88vh; object-fit: contain; cursor: zoom-out; }
 
   .lightbox-close {
     position: absolute;
@@ -400,10 +400,10 @@
 </footer>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <span class="lightbox-close">× chiudi</span>
+  <span class="lightbox-close" onclick="closeLightbox()">× chiudi</span>
   <span class="lightbox-prev" onclick="event.stopPropagation(); navigateLightbox(-1)">← prec</span>
   <span class="lightbox-next" onclick="event.stopPropagation(); navigateLightbox(1)">succ →</span>
-  <img src="" id="lightboxImg" alt="" onclick="event.stopPropagation()">
+  <img src="" id="lightboxImg" alt="">
   <div class="lightbox-caption" id="lightboxCaption"></div>
 </div>
 

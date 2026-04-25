@@ -135,28 +135,17 @@
 
   .chapter-title em { font-style: italic; color: var(--muted); }
 
-  /* GRID CSS nativo - nessuna sovrapposizione */
+  /* MASONRY */
   .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    align-items: start;
+    position: relative;
+    width: 100%;
   }
 
   .photo-item {
-    position: relative;
+    position: absolute;
     overflow: hidden;
     cursor: zoom-in;
     background: var(--surface);
-    grid-column: span 1;
-  }
-
-  .photo-item.featured {
-    grid-column: span 2;
-  }
-
-  .photo-item.half {
-    grid-column: span 2;
   }
 
   .photo-item img {
@@ -309,10 +298,21 @@
 
   @media (max-width: 560px) {
     .photo-grid {
-      grid-template-columns: 1fr !important;
+      position: static !important;
+      height: auto !important;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
-    .photo-item, .photo-item.featured, .photo-item.half {
-      grid-column: span 1 !important;
+    .photo-item {
+      position: static !important;
+      width: 100% !important;
+      left: auto !important;
+      top: auto !important;
+    }
+    .photo-item img {
+      width: 100%;
+      height: auto;
     }
   }
     nav { padding: 16px 20px; }
@@ -421,8 +421,8 @@ const chapters = {
     { src: "foto/DSC04641.jpg", loc: "Parigi, 2026", ratio: 1.5 },
     { src: "foto/DSC04989.jpg", loc: "Parigi, 2026", featured: true, center: true, ratio: 1.5 },
     { src: "foto/DSC05068.jpg", loc: "Trinidad, 2022", ratio: 1.5 },
-    { src: "foto/DSC098812.jpg", loc: "Istanbul, 2024", featured: true, ratio: 1.5 },
-    { src: "foto/DSC05033.jpg", loc: "Parigi, 2026", featured: true, ratio: 0.667 },
+    { src: "foto/DSC098812.jpg", loc: "Istanbul, 2024", newrow: true, ratio: 1.5 },
+    { src: "foto/DSC04170.jpg", loc: "Parigi, 2026", featured: true, ratio: 1.5 },
   ],
   coincidenze: [
     { src: "foto/DSC04318.jpg", loc: "Parigi, 2026", featured: true, ratio: 1.5 },
@@ -459,22 +459,91 @@ const chapters = {
   ]
 };
 
-function buildGrid(gridId, items) {
+const GAP = 6;
+const COLS = 4;
+
+function masonry(gridId, items) {
   const grid = document.getElementById(gridId);
   grid.innerHTML = '';
-  items.forEach((p) => {
+
+  const elements = items.map((p) => {
     const div = document.createElement('div');
-    let cls = 'photo-item';
-    if (p.featured || p.half) cls += ' featured';
-    div.className = cls;
+    div.className = 'photo-item';
     div.innerHTML = `
       <img src="${p.src}" alt="${p.loc}" loading="lazy">
       <div class="photo-caption"><span class="caption-loc">${p.loc}</span></div>
     `;
     div.addEventListener('click', () => openLightbox(div, p.loc));
     grid.appendChild(div);
+    return { el: div, p };
   });
+
+  function layout() {
+    const totalWidth = grid.offsetWidth;
+    if (totalWidth === 0) return;
+    const cols = totalWidth < 560 ? 1 : COLS;
+    const colWidth = (totalWidth - GAP * (cols - 1)) / cols;
+    const colHeights = Array(cols).fill(0);
+
+    const positions = elements.map(({ el, p }) => {
+      const naturalRatio = p.ratio ? (1 / p.ratio) : 0.667;
+      let itemCols;
+      if (cols === 1) itemCols = 1;
+      else if (p.half) itemCols = Math.ceil(cols / 2);
+      else if (p.featured) itemCols = Math.min(Math.round(cols * 0.5), cols - 1);
+      else itemCols = 1;
+      if (itemCols < 1) itemCols = 1;
+      const itemWidth = colWidth * itemCols + GAP * (itemCols - 1);
+      const itemHeight = itemWidth * naturalRatio;
+      return { el, p, itemCols, itemWidth, itemHeight, x: 0, y: 0, col: 0 };
+    });
+
+    const placedGroups = {};
+    positions.forEach((pos) => {
+      if (cols > 1 && pos.p.group && pos.p.half) {
+        const gid = pos.p.group;
+        if (!placedGroups[gid]) {
+          const rowY = Math.max(...colHeights);
+          placedGroups[gid] = { y: rowY, nextCol: 0 };
+          colHeights.fill(rowY);
+        }
+        const g = placedGroups[gid];
+        pos.x = g.nextCol * (colWidth + GAP);
+        pos.y = g.y;
+        pos.col = g.nextCol;
+        g.nextCol += pos.itemCols;
+        const newH = g.y + pos.itemHeight + GAP;
+        for (let c = pos.col; c < pos.col + pos.itemCols; c++) colHeights[c] = newH;
+      } else {
+        if (pos.p.newrow) colHeights.fill(Math.max(...colHeights));
+        let bestCol = 0, bestHeight = Infinity;
+        for (let c = 0; c <= cols - pos.itemCols; c++) {
+          const maxH = Math.max(...colHeights.slice(c, c + pos.itemCols));
+          if (maxH < bestHeight) { bestHeight = maxH; bestCol = c; }
+        }
+        pos.x = bestCol * (colWidth + GAP);
+        pos.y = bestHeight;
+        pos.col = bestCol;
+        const newH = bestHeight + pos.itemHeight + GAP;
+        for (let c = bestCol; c < bestCol + pos.itemCols; c++) colHeights[c] = newH;
+      }
+    });
+
+    positions.forEach(({ el, p, x, y, itemWidth }) => {
+      const finalX = p.center ? (totalWidth - itemWidth) / 2 : x;
+      el.style.left = finalX + 'px';
+      el.style.top = y + 'px';
+      el.style.width = itemWidth + 'px';
+    });
+
+    grid.style.height = Math.max(...colHeights) + 'px';
+  }
+
+  layout();
+  window.addEventListener('resize', layout);
 }
+
+function buildGrid(gridId, items) { masonry(gridId, items); }
 
 // Lista globale di tutte le foto in ordine
 let allPhotos = [];

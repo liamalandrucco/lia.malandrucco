@@ -155,10 +155,7 @@
     transition: transform 0.4s;
   }
 
-  .photo-item.small img {
-    width: 75%;
-    margin: 0 auto;
-  }
+  .photo-item:hover img { transform: scale(1.03); }
 
   .photo-caption {
     position: absolute;
@@ -419,7 +416,7 @@ const chapters = {
     { src: "foto/DSC05365.jpg", loc: "L'Avana, 2022", ratio: 1.5 },
     { src: "foto/DSC05811.jpg", loc: "Hanoi, 2024", ratio: 1.5 },
     { src: "foto/DSC00420.jpg", loc: "Los Angeles, 2025", featured: true, ratio: 1.5 },
-    { src: "foto/DSC00309.jpg", loc: "Istanbul, 2024", small: true, ratio: 1.5 },
+    { src: "foto/DSC00309.jpg", loc: "Istanbul, 2024", ratio: 1.5 },
     { src: "foto/DSC05735.jpg", loc: "Mekong Delta, 2023", ratio: 1.5 },
     { src: "foto/DSC04641.jpg", loc: "Parigi, 2026", ratio: 1.5 },
     { src: "foto/DSC04989.jpg", loc: "Parigi, 2026", featured: true, center: true, ratio: 1.5 },
@@ -449,7 +446,7 @@ const chapters = {
   attraverso: [
     { src: "foto/DSC04355.jpg", loc: "Parigi, 2026", ratio: 0.667 },
     { src: "foto/DSC08954.jpg", loc: "New York, 2024", ratio: 1.5 },
-    { src: "foto/DSC06714.jpg", loc: "Siem Reap, 2024", small: true, ratio: 1.5 },
+    { src: "foto/DSC06714.jpg", loc: "Siem Reap, 2024", ratio: 1.5 },
     { src: "foto/DSC06527.jpg", loc: "Mekong Delta, 2024", featured: true, ratio: 1.5 },
     { src: "foto/DSC02841.jpg", loc: "Marrakech, 2025", ratio: 1.5 },
     { src: "foto/DSC09082-2.jpg", loc: "New York, 2024", ratio: 1.5 },
@@ -472,7 +469,7 @@ function masonry(gridId, items) {
   // Crea gli elementi e carica le immagini
   const elements = items.map((p) => {
     const div = document.createElement('div');
-    div.className = 'photo-item' + (p.featured ? ' featured' : '') + (p.small ? ' small' : '');
+    div.className = 'photo-item' + (p.featured ? ' featured' : '');
     div.innerHTML = `
       <img src="${p.src}" alt="${p.loc}" loading="lazy">
       <div class="photo-caption"><span class="caption-loc">${p.loc}</span></div>
@@ -501,9 +498,8 @@ function masonry(gridId, items) {
       else itemCols = 1;
       if (itemCols < 1) itemCols = 1;
       const baseWidth = colWidth * itemCols + GAP * (itemCols - 1);
-      const itemWidth = baseWidth;
-      const displayWidth = (cols > 1 && p.small) ? baseWidth * 0.75 : baseWidth;
-      const itemHeight = displayWidth * naturalRatio;
+      const itemWidth = p.small ? baseWidth * 0.75 : baseWidth;
+      const itemHeight = itemWidth * naturalRatio;
       return { el, p, itemCols, itemWidth, itemHeight, x: 0, y: 0, col: 0 };
     });
 

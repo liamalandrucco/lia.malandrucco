@@ -135,17 +135,28 @@
 
   .chapter-title em { font-style: italic; color: var(--muted); }
 
-  /* MASONRY */
+  /* GRID CSS nativo - nessuna sovrapposizione */
   .photo-grid {
-    position: relative;
-    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    align-items: start;
   }
 
   .photo-item {
-    position: absolute;
+    position: relative;
     overflow: hidden;
     cursor: zoom-in;
     background: var(--surface);
+    grid-column: span 1;
+  }
+
+  .photo-item.featured {
+    grid-column: span 2;
+  }
+
+  .photo-item.half {
+    grid-column: span 2;
   }
 
   .photo-item img {
@@ -298,21 +309,10 @@
 
   @media (max-width: 560px) {
     .photo-grid {
-      position: static !important;
-      height: auto !important;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      grid-template-columns: 1fr !important;
     }
-    .photo-item {
-      position: static !important;
-      width: 100% !important;
-      left: auto !important;
-      top: auto !important;
-    }
-    .photo-item img {
-      width: 100%;
-      height: auto;
+    .photo-item, .photo-item.featured, .photo-item.half {
+      grid-column: span 1 !important;
     }
   }
     nav { padding: 16px 20px; }
@@ -459,132 +459,21 @@ const chapters = {
   ]
 };
 
-const GAP = 6;
-const COLS = 3;
-
-function masonry(gridId, items) {
+function buildGrid(gridId, items) {
   const grid = document.getElementById(gridId);
   grid.innerHTML = '';
-
-  // Crea gli elementi e carica le immagini
-  const elements = items.map((p) => {
+  items.forEach((p) => {
     const div = document.createElement('div');
-    div.className = 'photo-item' + (p.featured ? ' featured' : '');
+    let cls = 'photo-item';
+    if (p.featured || p.half) cls += ' featured';
+    div.className = cls;
     div.innerHTML = `
       <img src="${p.src}" alt="${p.loc}" loading="lazy">
       <div class="photo-caption"><span class="caption-loc">${p.loc}</span></div>
     `;
     div.addEventListener('click', () => openLightbox(div, p.loc));
     grid.appendChild(div);
-    return { el: div, p };
   });
-
-  function layout() {
-    const totalWidth = grid.offsetWidth;
-    if (totalWidth === 0) return;
-
-    const cols = totalWidth < 560 ? 2 : COLS;
-    const colWidth = (totalWidth - GAP * (cols - 1)) / cols;
-    const colHeights = Array(cols).fill(0);
-
-    // Prima passata: calcola dimensioni e posizioni provvisorie
-    const positions = elements.map(({ el, p }) => {
-      const img = el.querySelector('img');
-      // Usa il ratio precalcolato se disponibile, altrimenti aspetta il caricamento
-      const naturalRatio = p.ratio ? (1 / p.ratio) : (img.naturalHeight / img.naturalWidth || 0.667);
-      let itemCols;
-      if (p.half) itemCols = Math.ceil(cols / 2);
-      else if (p.featured) itemCols = Math.min(Math.round(cols * 0.5), cols - 1);
-      else itemCols = 1;
-      if (itemCols < 1) itemCols = 1;
-      const baseWidth = colWidth * itemCols + GAP * (itemCols - 1);
-      const itemWidth = p.small ? baseWidth * 0.75 : baseWidth;
-      const itemHeight = itemWidth * naturalRatio;
-      return { el, p, itemCols, itemWidth, itemHeight, x: 0, y: 0, col: 0 };
-    });
-
-    // Raggruppa per group id
-    const groups = {};
-    positions.forEach((pos) => {
-      if (pos.p.group) {
-        if (!groups[pos.p.group]) groups[pos.p.group] = [];
-        groups[pos.p.group].push(pos);
-      }
-    });
-
-    // Layout principale
-    const placedGroups = {};
-    positions.forEach((pos) => {
-      // Se fa parte di un gruppo half, le foto vanno sulla stessa riga
-      if (pos.p.group && pos.p.half) {
-        const gid = pos.p.group;
-        if (!placedGroups[gid]) {
-          // Prima foto del gruppo: trova la riga più bassa disponibile
-          const rowY = Math.max(...colHeights);
-          placedGroups[gid] = { y: rowY, nextCol: 0 };
-          // Azzera le colonne alla stessa altezza per la riga
-          colHeights.fill(rowY);
-        }
-        const g = placedGroups[gid];
-        pos.x = g.nextCol * (colWidth + GAP);
-        pos.y = g.y;
-        pos.col = g.nextCol;
-        g.nextCol += pos.itemCols;
-        const newH = g.y + pos.itemHeight + GAP;
-        for (let c = pos.col; c < pos.col + pos.itemCols; c++) {
-          colHeights[c] = newH;
-        }
-      } else {
-        // Se newrow: true, forza tutte le colonne alla stessa altezza prima di posizionare
-        if (pos.p.newrow) {
-          const maxH = Math.max(...colHeights);
-          colHeights.fill(maxH);
-        }
-        let bestCol = 0;
-        let bestHeight = Infinity;
-        for (let c = 0; c <= cols - pos.itemCols; c++) {
-          const maxH = Math.max(...colHeights.slice(c, c + pos.itemCols));
-          if (maxH < bestHeight) { bestHeight = maxH; bestCol = c; }
-        }
-        pos.x = bestCol * (colWidth + GAP);
-        pos.y = bestHeight;
-        pos.col = bestCol;
-        const newHeight = bestHeight + pos.itemHeight + GAP;
-        for (let c = bestCol; c < bestCol + pos.itemCols; c++) {
-          colHeights[c] = newHeight;
-        }
-      }
-    });
-
-    // Allineamento bottom per i gruppi
-    Object.values(groups).forEach((groupItems) => {
-      const bottomAligned = groupItems.filter(p => p.p.align === 'bottom');
-      if (bottomAligned.length < 2) return;
-      // Trova il bottom più basso del gruppo
-      const maxBottom = Math.max(...bottomAligned.map(p => p.y + p.itemHeight));
-      // Allinea tutte le foto del gruppo al bottom comune
-      bottomAligned.forEach((pos) => {
-        pos.y = maxBottom - pos.itemHeight;
-      });
-    });
-
-    // Applica posizioni al DOM
-    positions.forEach(({ el, p, x, y, itemWidth }) => {
-      // Se center: true, centra orizzontalmente nella griglia
-      const finalX = p.center ? (totalWidth - itemWidth) / 2 : x;
-      el.style.left = finalX + 'px';
-      el.style.top = y + 'px';
-      el.style.width = itemWidth + 'px';
-    });
-
-    grid.style.height = Math.max(...colHeights) + 'px';
-  }
-
-  // Layout immediato grazie ai ratio precalcolati
-  layout();
-
-  // Ricalcola al resize
-  window.addEventListener('resize', layout);
 }
 
 // Lista globale di tutte le foto in ordine
@@ -629,9 +518,10 @@ document.addEventListener('keydown', e => {
 });
 
 buildAllPhotos();
-masonry('grid-storto', chapters.storto);
-masonry('grid-coincidenze', chapters.coincidenze);
-masonry('grid-attraverso', chapters.attraverso);
+buildGrid('grid-storto', chapters.storto);
+buildGrid('grid-coincidenze', chapters.coincidenze);
+buildGrid('grid-attraverso', chapters.attraverso);
+
 </script>
 </body>
 </html>
